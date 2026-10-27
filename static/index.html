@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetScope // Cybersecurity Network Scanner &amp; Audit Engine</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-radar">
+          <div class="radar-sweep"></div>
+          <div class="radar-dot"></div>
+        </div>
+        <div class="brand-text">
+          <h1>NETSCOPE <span class="tag">v2.0 PRO</span></h1>
+          <p class="subtitle">ENTERPRISE NETWORK RECONNAISSANCE &amp; SECURITY POSTURE AUDITOR</p>
+        </div>
+      </div>
+
+      <div class="header-status">
+        <div class="badge-pill" id="local-info-badge">
+          <span class="icon">🌐</span>
+          <span id="local-ip-display">Detecting Network...</span>
+        </div>
+        <div class="badge-pill status-live">
+          <span class="pulse-dot"></span>
+          <span>AUDIT ENGINE ONLINE</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="dashboard-grid">
+      <!-- Left Column: Scan Configuration -->
+      <section class="card config-card">
+        <div class="card-header">
+          <h2><span class="prefix">//</span> AUDIT CONFIGURATION</h2>
+          <span class="section-tag">TARGET &amp; SCOPE</span>
+        </div>
+
+        <form id="scan-form">
+          <!-- Target Input -->
+          <div class="form-group">
+            <label for="target-input">Target Range / CIDR Scope <span class="req">*</span></label>
+            <div class="input-with-button">
+              <input 
+                type="text" 
+                id="target-input" 
+                name="target" 
+                placeholder="e.g. 192.168.1.0/24, 10.0.0.1, 127.0.0.1" 
+                required 
+                autocomplete="off"
+              />
+            </div>
+            <div class="quick-presets">
+              <span class="preset-label">Scope Presets:</span>
+              <button type="button" class="chip-btn" id="btn-preset-local">Local Subnet</button>
+              <button type="button" class="chip-btn" id="btn-preset-loopback">Localhost</button>
+            </div>
+          </div>
+
+          <!-- Port Profile Selection -->
+          <div class="form-group">
+            <label>Port Audit Profile</label>
+            <div class="port-chips" id="port-selector">
+              <button type="button" class="port-chip active" data-profile="top20">Top 20 (Fast)</button>
+              <button type="button" class="port-chip" data-profile="top100">Top 100</button>
+              <button type="button" class="port-chip" data-profile="top1000">Top 1000 (Standard)</button>
+              <button type="button" class="port-chip" data-profile="web_db">Web &amp; DBs</button>
+              <button type="button" class="port-chip" data-profile="1-1024">System (1-1024)</button>
+              <button type="button" class="port-chip" data-profile="all_ports">Full 65,535 Ports</button>
+              <button type="button" class="port-chip" data-profile="custom">Custom</button>
+            </div>
+
+            <div class="custom-port-container" id="custom-ports-wrap" style="display: none;">
+              <input 
+                type="text" 
+                id="custom-ports-input" 
+                placeholder="e.g. 21, 22, 80, 443, 8000-8080" 
+              />
+              <small class="helper-text">Comma-separated port numbers or inclusive ranges (1-65535)</small>
+            </div>
+          </div>
+
+          <!-- Advanced Options Accordion -->
+          <details class="advanced-details" open>
+            <summary>Advanced Recon &amp; Compliance Options</summary>
+            <div class="options-grid">
+              <label class="toggle-control">
+                <input type="checkbox" id="opt-ping" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Ping Pre-Sweep &amp; TTL OS Guessing</span>
+              </label>
+
+              <label class="toggle-control">
+                <input type="checkbox" id="opt-banner" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Service &amp; Software Version Fingerprinting</span>
+              </label>
+
+              <label class="toggle-control">
+                <input type="checkbox" id="opt-dns" checked>
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">Reverse DNS Hostname Resolution</span>
+              </label>
+            </div>
+
+            <div class="sliders-row">
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span>Concurrency Workers (Threads)</span>
+                  <span class="slider-val" id="val-threads">60</span>
+                </div>
+                <input type="range" id="opt-threads" min="10" max="100" step="5" value="60">
+              </div>
+
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span>Socket Timeout</span>
+                  <span class="slider-val" id="val-timeout">0.4s</span>
+                </div>
+                <input type="range" id="opt-timeout" min="0.1" max="1.5" step="0.1" value="0.4">
+              </div>
+            </div>
+          </details>
+
+          <!-- Action Buttons -->
+          <div class="action-buttons">
+            <button type="submit" class="btn btn-primary" id="btn-scan">
+              <span class="btn-icon">⚡</span> INITIATE AUDIT
+            </button>
+            <button type="button" class="btn btn-danger" id="btn-cancel" disabled>
+              <span class="btn-icon">⛔</span> ABORT
+            </button>
+          </div>
+        </form>
+
+        <!-- Past Scans Summary -->
+        <div class="history-section">
+          <div class="history-header">
+            <h3>Audit Session History</h3>
+            <button type="button" class="btn-text" id="btn-refresh-history">Refresh</button>
+          </div>
+          <div class="history-list" id="history-container">
+            <p class="empty-hint">No past audit sessions recorded.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Live Telemetry, Results & Console -->
+      <section class="card results-card">
+        <!-- Live Telemetry Stats -->
+        <div class="metrics-bar">
+          <div class="metric-card">
+            <span class="metric-title">TARGETS</span>
+            <span class="metric-value" id="stat-targets">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">ACTIVE HOSTS</span>
+            <span class="metric-value text-accent" id="stat-hosts">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">OPEN PORTS</span>
+            <span class="metric-value text-warning" id="stat-ports">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">HIGH RISKS</span>
+            <span class="metric-value text-danger" id="stat-risks">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">NETWORK GRADE</span>
+            <span class="metric-value text-success" id="stat-grade">—</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-title">ELAPSED</span>
+            <span class="metric-value" id="stat-time">0.0s</span>
+          </div>
+        </div>
+
+        <!-- Progress Tracker -->
+        <div class="progress-container">
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progress-bar" style="width: 0%;"></div>
+          </div>
+          <div class="progress-meta">
+            <span id="scan-status-text">Ready for network audit</span>
+            <span id="progress-percentage">0%</span>
+          </div>
+        </div>
+
+        <!-- Toolbar: Filters & Professional Exports -->
+        <div class="results-toolbar">
+          <div class="search-filter">
+            <input type="text" id="filter-search" placeholder="Filter by IP, OS, Port, Service, Software or Risk...">
+          </div>
+          <div class="export-actions">
+            <button type="button" class="btn-sm btn-report" id="btn-export-html" disabled>
+              <span>📄</span> Executive Audit Report
+            </button>
+            <button type="button" class="btn-sm" id="btn-export-csv" disabled>
+              <span>📥</span> CSV
+            </button>
+            <button type="button" class="btn-sm" id="btn-export-json" disabled>
+              <span>💾</span> JSON
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Results Display Area -->
+        <div class="results-viewport" id="results-viewport">
+          <div class="empty-state" id="empty-state">
+            <div class="empty-icon">🛡️</div>
+            <h3>No Active Audit In Progress</h3>
+            <p>Select your scope and port profile, then click <strong>Initiate Audit</strong> to discover hosts, detect software versions, and evaluate security posture.</p>
+          </div>
+          <div class="host-cards-container" id="host-cards-container" style="display: none;"></div>
+        </div>
+
+        <!-- Live Activity Log Terminal -->
+        <details class="terminal-container" open>
+          <summary class="terminal-summary">
+            <span>LIVE RECON &amp; TELEMETRY STREAM</span>
+            <span class="terminal-clear" id="btn-clear-logs">Clear</span>
+          </summary>
+          <div class="terminal-window" id="terminal-output">
+            <div class="log-line sys-line">[System] NetScope v2.0 Enterprise Recon Engine ready.</div>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

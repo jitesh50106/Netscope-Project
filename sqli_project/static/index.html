@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SQLi Defense & Audit // Minor Project Platform</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="logo-badge">
+        <span class="shield-icon">🛡️</span>
+      </div>
+      <div>
+        <h1 class="project-title">SQL Injection Security Platform</h1>
+        <p class="project-subtitle">Academic Minor Project: Detection, Exploitation & Mitigation in Web Applications</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="badge-group">
+        <span class="badge badge-cwe">CWE-89</span>
+        <span class="badge badge-owasp">OWASP A03:2021</span>
+        <span class="badge badge-python">Python AST SAST</span>
+      </div>
+      <button id="reset-db-btn" class="btn btn-outline" title="Reset SQLite test database to initial state">
+        🔄 Reset Database
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" data-tab="tab-lab">🔬 Vulnerability & Mitigation Testbed</button>
+    <button class="tab-btn" data-tab="tab-sast">🛡️ SAST Static Code Scanner</button>
+    <button class="tab-btn" data-tab="tab-theory">🧠 Compiler & Grammar Theory</button>
+    <button class="tab-btn" data-tab="tab-report">📑 Academic Project Report</button>
+  </nav>
+
+  <!-- Container for Tab Contents -->
+  <main class="main-container">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: INTERACTIVE LAB TESTBED             -->
+    <!-- ========================================== -->
+    <section id="tab-lab" class="tab-content active">
+      <!-- Mode Control Bar -->
+      <div class="mode-control-card">
+        <div class="mode-control-left">
+          <label class="control-label">Operating Execution Mode:</label>
+          <div class="mode-toggle-group">
+            <button id="mode-vuln-btn" class="mode-btn mode-vuln active">
+              🔴 Insecure Mode (Dynamic SQL)
+            </button>
+            <button id="mode-mitig-btn" class="mode-btn mode-mitig">
+              🟢 Mitigated Mode (Prepared Statements)
+            </button>
+          </div>
+        </div>
+        <div class="mode-control-right">
+          <span id="mode-description-badge" class="mode-desc-pill vuln-desc">
+            ⚠️ WARNING: Raw string concatenation active. Vulnerable to syntax manipulation.
+          </span>
+        </div>
+      </div>
+
+      <!-- Scenarios Selector & Input Form -->
+      <div class="grid-2col">
+        <!-- Input & Scenario Panel -->
+        <div class="card card-panel">
+          <div class="card-header">
+            <h3>1. Select Web Application Vector</h3>
+          </div>
+          <div class="scenario-buttons">
+            <button class="scenario-btn active" data-scenario="auth">
+              <span class="scenario-icon">🔑</span>
+              <div>
+                <strong>Authentication Service</strong>
+                <small>Login query bypass demonstration</small>
+              </div>
+            </button>
+            <button class="scenario-btn" data-scenario="search">
+              <span class="scenario-icon">🔍</span>
+              <div>
+                <strong>Catalog Search Service</strong>
+                <small>LIKE clause string injection</small>
+              </div>
+            </button>
+            <button class="scenario-btn" data-scenario="profile">
+              <span class="scenario-icon">👤</span>
+              <div>
+                <strong>User Profile Service</strong>
+                <small>Numeric parameter injection</small>
+              </div>
+            </button>
+          </div>
+
+          <hr class="divider">
+
+          <div class="card-header">
+            <h3>2. Request Parameters</h3>
+          </div>
+
+          <!-- Scenario Forms -->
+          <!-- 1. Auth Form -->
+          <form id="form-auth" class="scenario-form active">
+            <div class="form-group">
+              <label for="auth-username">Username:</label>
+              <input type="text" id="auth-username" class="form-control" value="admin" placeholder="e.g. admin or payload">
+            </div>
+            <div class="form-group">
+              <label for="auth-password">Password:</label>
+              <input type="text" id="auth-password" class="form-control" value="Password123!" placeholder="Enter password">
+            </div>
+            <div class="sample-payloads">
+              <span class="sample-label">Educational Sample Inputs:</span>
+              <button type="button" class="btn-chip" data-user="admin" data-pwd="SuperSecretAdminPass!">Valid Admin</button>
+              <button type="button" class="btn-chip chip-warning" data-user="admin' --" data-pwd="any">Comment Out Pwd (admin' --)</button>
+              <button type="button" class="btn-chip chip-danger" data-user="' OR '1'='1' --" data-pwd="x">Tautology (' OR '1'='1')</button>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🚀 Submit Request</button>
+          </form>
+
+          <!-- 2. Search Form -->
+          <form id="form-search" class="scenario-form">
+            <div class="form-group">
+              <label for="search-keyword">Search Term (Product or Category):</label>
+              <input type="text" id="search-keyword" class="form-control" value="Firewall" placeholder="e.g. Firewall, Router">
+            </div>
+            <div class="sample-payloads">
+              <span class="sample-label">Educational Sample Inputs:</span>
+              <button type="button" class="btn-chip" data-kw="Firewall">Normal Search ("Firewall")</button>
+              <button type="button" class="btn-chip chip-warning" data-kw="%' OR 1=1 --">Wildcard Breakout (%' OR 1=1 --)</button>
+              <button type="button" class="btn-chip chip-danger" data-kw="x' UNION SELECT id, username, role, email, password_hash, account_balance, 'p' FROM users --">UNION Exfiltration</button>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🚀 Search Catalog</button>
+          </form>
+
+          <!-- 3. Profile Form -->
+          <form id="form-profile" class="scenario-form">
+            <div class="form-group">
+              <label for="profile-user-id">User ID (Integer parameter):</label>
+              <input type="text" id="profile-user-id" class="form-control" value="1" placeholder="e.g. 1, 2">
+            </div>
+            <div class="sample-payloads">
+              <span class="sample-label">Educational Sample Inputs:</span>
+              <button type="button" class="btn-chip" data-id="1">Normal User ID (1)</button>
+              <button type="button" class="btn-chip chip-warning" data-id="1 OR 1=1">Numeric Tautology (1 OR 1=1)</button>
+              <button type="button" class="btn-chip chip-danger" data-id="1 UNION SELECT id, username, role, email, full_name, account_balance FROM users">UNION Extraction</button>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">🚀 Fetch User Record</button>
+          </form>
+        </div>
+
+        <!-- Real-Time Inspection & Diagnostics Panel -->
+        <div class="card card-panel">
+          <div class="card-header">
+            <h3>3. Real-Time Query & Execution Diagnostics</h3>
+            <span id="exec-status-pill" class="status-pill status-ready">READY</span>
+          </div>
+
+          <!-- Query Preview Card -->
+          <div class="inspection-block">
+            <div class="block-title">
+              <span>SQL COMMAND CONSTRUCTED</span>
+              <span id="exec-time-label" class="micro-badge">0.00 ms</span>
+            </div>
+            <pre id="constructed-sql-display" class="code-box">-- Click "Submit Request" to inspect query construction</pre>
+          </div>
+
+          <!-- Parameter Binding Info (For Mitigated Mode) -->
+          <div id="param-binding-block" class="inspection-block" style="display: none;">
+            <div class="block-title">
+              <span>PREPARED STATEMENT PARAMETER BINDINGS</span>
+              <span class="micro-badge badge-secure">ISOLATED DATA CHANNEL</span>
+            </div>
+            <pre id="param-binding-display" class="code-box">{}</pre>
+          </div>
+
+          <!-- Lexical Token Breakdown -->
+          <div class="inspection-block">
+            <div class="block-title">
+              <span>LEXICAL TOKEN STREAM ANALYSIS (COMPILER LEXER)</span>
+              <span id="token-count-label" class="micro-badge">0 Tokens</span>
+            </div>
+            <div id="token-stream-container" class="token-stream-container">
+              <span class="placeholder-text">Execute a query to visualize lexical tokens</span>
+            </div>
+          </div>
+
+          <!-- Database Results Table -->
+          <div class="inspection-block">
+            <div class="block-title">
+              <span>DATABASE RESPONSE RECORDS</span>
+              <span id="record-count-label" class="micro-badge">0 Records</span>
+            </div>
+            <div id="db-error-alert" class="alert-box alert-error" style="display: none;"></div>
+            <div class="table-responsive">
+              <table id="db-results-table" class="data-table">
+                <thead>
+                  <tr id="db-table-headers">
+                    <th>Awaiting Query Execution...</th>
+                  </tr>
+                </thead>
+                <tbody id="db-table-body">
+                  <tr><td>No data available.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Academic Security Analysis Summary -->
+          <div id="security-analysis-box" class="security-analysis-box">
+            <h4>Security & Theoretical Assessment:</h4>
+            <p id="analysis-text">Select an execution mode and scenario to observe database behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: SAST STATIC CODE SCANNER            -->
+    <!-- ========================================== -->
+    <section id="tab-sast" class="tab-content">
+      <div class="card card-panel">
+        <div class="card-header">
+          <div>
+            <h2>Static Application Security Testing (SAST) Scanner</h2>
+            <p class="section-desc">AST-driven static analysis engine detecting unparameterized SQL query composition in Python source code (CWE-89).</p>
+          </div>
+          <button id="run-sast-btn" class="btn btn-primary">⚡ Run AST Security Audit</button>
+        </div>
+
+        <!-- Presets Selection Bar -->
+        <div class="presets-bar">
+          <span class="presets-label">Load Code Preset:</span>
+          <div id="presets-container" class="presets-buttons">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="grid-2col sast-layout">
+          <!-- Code Input Area -->
+          <div class="sast-editor-container">
+            <label for="sast-code-input" class="editor-label">Python Source Code:</label>
+            <textarea id="sast-code-input" class="sast-code-textarea" spellcheck="false" placeholder="# Paste Python code here or load a preset above..."></textarea>
+          </div>
+
+          <!-- SAST Findings & Scorecard -->
+          <div class="sast-results-container">
+            <!-- Scorecard Summary -->
+            <div class="scorecard-grid">
+              <div class="metric-card">
+                <span class="metric-num" id="sast-score">--</span>
+                <span class="metric-label">Security Score</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-num" id="sast-grade">--</span>
+                <span class="metric-label">Security Grade</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-num metric-danger" id="sast-critical-count">0</span>
+                <span class="metric-label">CWE-89 Vulnerabilities</span>
+              </div>
+              <div class="metric-card">
+                <span class="metric-num metric-success" id="sast-secure-count">0</span>
+                <span class="metric-label">Compliant Calls</span>
+              </div>
+            </div>
+
+            <!-- Findings List -->
+            <div class="findings-header">
+              <h3>Static Analysis Findings</h3>
+            </div>
+            <div id="sast-findings-list" class="findings-list">
+              <p class="placeholder-text">Click "Run AST Security Audit" to inspect code for injection vulnerabilities.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: GRAMMAR & COMPILER THEORY           -->
+    <!-- ========================================== -->
+    <section id="tab-theory" class="tab-content">
+      <div class="theory-grid">
+        <!-- Card 1: Chomsky & Formal Grammar -->
+        <div class="card card-panel">
+          <div class="card-header">
+            <h3>Formal Language Theory: Code vs Data Ambiguity</h3>
+          </div>
+          <div class="card-body">
+            <p>
+              In formal language theory (Chomsky Hierarchy), Structured Query Language (SQL) is defined by a <strong>Type-2 Context-Free Grammar (CFG)</strong>.
+              A relational database compiler processes SQL statements through distinct phases:
+            </p>
+            <div class="pipeline-diagram">
+              <div class="pipeline-step">1. Lexer (Tokens)</div>
+              <div class="pipeline-arrow">➔</div>
+              <div class="pipeline-step">2. Parser (AST)</div>
+              <div class="pipeline-arrow">➔</div>
+              <div class="pipeline-step">3. Optimizer</div>
+              <div class="pipeline-arrow">➔</div>
+              <div class="pipeline-step">4. Execution Plan</div>
+            </div>
+            <h4>The Fundamental Flaw of Dynamic SQL:</h4>
+            <p>
+              When an application uses <em>string concatenation</em> or <em>f-strings</em>, user data is merged into the raw source code text <strong>prior</strong> to lexical analysis. 
+              The database lexer cannot distinguish between characters intended by the developer and characters supplied by the user. An injected single quote (<code>'</code>) closes a string literal token early, and subsequent characters are interpreted as syntactic grammar commands (e.g. <code>OR</code>, <code>UNION</code>, <code>--</code>).
+            </p>
+          </div>
+        </div>
+
+        <!-- Card 2: Interactive Tokenizer Playground -->
+        <div class="card card-panel">
+          <div class="card-header">
+            <h3>Interactive SQL Tokenizer & Lexer Sandbox</h3>
+          </div>
+          <div class="card-body">
+            <p>Type any SQL statement below to observe how the lexical analyzer tokenizes each element:</p>
+            <div class="form-group">
+              <input type="text" id="theory-sql-input" class="form-control" value="SELECT id, name FROM users WHERE id = 1 OR '1'='1' -- comment;">
+            </div>
+            <div class="token-legend">
+              <span class="token-badge badge-KEYWORD">KEYWORD</span>
+              <span class="token-badge badge-IDENTIFIER">IDENTIFIER</span>
+              <span class="token-badge badge-STRING_LITERAL">STRING_LITERAL</span>
+              <span class="token-badge badge-NUMERIC_LITERAL">NUMERIC_LITERAL</span>
+              <span class="token-badge badge-OPERATOR">OPERATOR</span>
+              <span class="token-badge badge-COMMENT">COMMENT</span>
+              <span class="token-badge badge-PARAMETER_MARKER">PARAM (?)</span>
+            </div>
+            <div id="theory-token-stream" class="token-stream-container" style="margin-top: 15px;">
+              <!-- Dynamic tokens -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Defense-in-Depth Mitigation Hierarchy -->
+        <div class="card card-panel full-width">
+          <div class="card-header">
+            <h3>Defense-in-Depth Mitigation Hierarchy</h3>
+          </div>
+          <div class="card-body">
+            <div class="mitigation-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Mitigation Tier</th>
+                    <th>Mechanism</th>
+                    <th>Theoretical Principle</th>
+                    <th>Efficacy</th>
+                    <th>OWASP Standard</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong class="text-success">Tier 1: Primary</strong></td>
+                    <td><strong>Parameterized Queries (Prepared Statements)</strong></td>
+                    <td>Separates query grammar from data values. The execution plan is compiled prior to parameter binding.</td>
+                    <td><span class="badge badge-success">100% Deterministic Defense</span></td>
+                    <td>ASVS V5.3.1</td>
+                  </tr>
+                  <tr>
+                    <td><strong class="text-info">Tier 2: Abstraction</strong></td>
+                    <td><strong>Object-Relational Mapping (ORM)</strong></td>
+                    <td>Abstracts raw SQL via type-safe domain objects (SQLAlchemy, Django ORM).</td>
+                    <td><span class="badge badge-success">High (unless raw SQL invoked)</span></td>
+                    <td>ASVS V5.3.2</td>
+                  </tr>
+                  <tr>
+                    <td><strong class="text-warning">Tier 3: Boundary</strong></td>
+                    <td><strong>Input Validation & Strict Typing</strong></td>
+                    <td>Enforces strict data types (e.g. <code>int(user_id)</code>) and regex character sets before processing.</td>
+                    <td><span class="badge badge-warning">Defense-in-Depth Layer</span></td>
+                    <td>ASVS V5.1.1</td>
+                  </tr>
+                  <tr>
+                    <td><strong class="text-primary">Tier 4: Systemic</strong></td>
+                    <td><strong>Principle of Least Privilege (PoLP)</strong></td>
+                    <td>Restricts database account permissions (read-only roles, removing <code>DROP</code> / administrative privileges).</td>
+                    <td><span class="badge badge-info">Limits Blast Radius</span></td>
+                    <td>ASVS V5.3.4</td>
+                  </tr>
+                  <tr>
+                    <td><strong class="text-muted">Tier 5: Perimeter</strong></td>
+                    <td><strong>Web Application Firewall (WAF)</strong></td>
+                    <td>Inspects HTTP requests for signature patterns and anomalies at Layer 7.</td>
+                    <td><span class="badge badge-warning">Supplementary Defense</span></td>
+                    <td>OWASP WAF Guidelines</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: ACADEMIC PROJECT REPORT             -->
+    <!-- ========================================== -->
+    <section id="tab-report" class="tab-content">
+      <div class="card card-panel report-container">
+        <div class="report-actions">
+          <button id="print-report-btn" class="btn btn-outline">🖨️ Print / Save as PDF</button>
+        </div>
+        <article class="academic-paper">
+          <header class="paper-header">
+            <h1 class="paper-title">Detection, Exploitation, and Mitigation of SQL Injection Vulnerabilities in Web Applications</h1>
+            <p class="paper-meta">
+              <strong>Course / Project:</strong> Minor Academic Project in Computer Science & Cybersecurity<br>
+              <strong>Classification:</strong> CWE-89 / OWASP Top 10 (A03:2021 - Injection)<br>
+              <strong>Platform Implementation:</strong> Python 3.13, SQLite3, FastAPI, Abstract Syntax Tree (AST) Engine
+            </p>
+          </header>
+
+          <hr>
+
+          <section class="paper-section">
+            <h2>1. Abstract</h2>
+            <p>
+              SQL Injection (SQLi) remains one of the most persistent and critical security flaws affecting data-driven web applications, consistently ranking in the OWASP Top 10. 
+              This minor project provides an in-depth academic investigation into the mechanics of SQL injection, covering its theoretical foundations in formal language grammar parsing, automated detection via Abstract Syntax Tree (AST) Static Application Security Testing (SAST), and deterministic mitigation through prepared statements and defense-in-depth engineering. 
+              By deploying a controlled dual-mode testbed environment, this project demonstrates how unparameterized queries violate the fundamental boundary between program instructions and user data, and how parameterized query architectures systematically neutralize this attack vector without relying on fragile input filtering.
+            </p>
+          </section>
+
+          <section class="paper-section">
+            <h2>2. Problem Statement & Objectives</h2>
+            <p>
+              In dynamic web applications, developers frequently compose database queries by concatenating raw user inputs with SQL command strings. This practice introduces <strong>CWE-89</strong>: Improper Neutralization of Special Elements used in an SQL Command. 
+            </p>
+            <h3>Project Objectives:</h3>
+            <ul>
+              <li><strong>Theoretical Analysis:</strong> Model SQL injection through compiler theory and Context-Free Grammars (CFG) to explain why dynamic string interpolation fundamentally fails.</li>
+              <li><strong>Automated Detection Engine:</strong> Construct an AST-based SAST scanner in Python to audit codebases for insecure string concatenation, f-strings, and legacy formatting inside database execution calls.</li>
+              <li><strong>Dual-State Demonstration:</strong> Implement side-by-side vulnerable and mitigated application services to visualize query construction, lexical token mutation, and data extraction risks.</li>
+              <li><strong>Mitigation Engineering:</strong> Provide provably secure implementations utilizing parameterized queries, type validation, and the Principle of Least Privilege.</li>
+            </ul>
+          </section>
+
+          <section class="paper-section">
+            <h2>3. Vulnerability Taxonomy & Mechanics Analysis</h2>
+            <p>SQL Injection vulnerabilities are categorized into three primary classes:</p>
+            <div class="taxonomy-grid">
+              <div class="taxonomy-card">
+                <h4>In-Band SQLi</h4>
+                <p>The attacker uses the same channel of communication to launch the attack and gather results.</p>
+                <ul>
+                  <li><strong>Error-Based:</strong> Inducing database syntax errors to disclose database versions, table schemas, or data.</li>
+                  <li><strong>UNION-Based:</strong> Appending malicious <code>UNION SELECT</code> operators to extract records from foreign tables into the HTTP response.</li>
+                </ul>
+              </div>
+              <div class="taxonomy-card">
+                <h4>Inferential (Blind) SQLi</h4>
+                <p>No direct data or error is reflected in the web response. The attacker reconstructs data bit-by-bit.</p>
+                <ul>
+                  <li><strong>Boolean-Based:</strong> Forcing true/false SQL conditions and observing differential application responses (e.g. content changes, status codes).</li>
+                  <li><strong>Time-Based:</strong> Injecting database sleep primitives (e.g. <code>pg_sleep()</code>, <code>WAITFOR DELAY</code>) to observe latency.</li>
+                </ul>
+              </div>
+              <div class="taxonomy-card">
+                <h4>Out-of-Band (OOB) SQLi</h4>
+                <p>Triggered when server responses are completely silent. Forces the database server to initiate DNS lookups or HTTP requests to an external listener.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="paper-section">
+            <h2>4. Detection Engine Architecture (SAST)</h2>
+            <p>
+              The developed SAST scanner utilizes Python's built-in <code>ast</code> module. Rather than relying on simple regex pattern matching—which suffers from high false-positive and false-negative rates—the AST parser analyzes the program's syntactic tree:
+            </p>
+            <ol>
+              <li><strong>Node Traversal:</strong> Iterates over <code>ast.Call</code> nodes invoking database executors (<code>cursor.execute()</code>, <code>conn.execute()</code>).</li>
+              <li><strong>Argument Inspection:</strong> Inspects the first argument to verify if it represents an <code>ast.JoinedStr</code> (f-string), <code>ast.BinOp</code> (concatenation with <code>+</code> or formatting with <code>%</code>), or <code>ast.Call</code> (<code>str.format()</code>).</li>
+              <li><strong>Taint Tracking:</strong> Monitors local variable assignments (<code>ast.Assign</code>) to detect queries composed insecurely in earlier statements before being passed to execution.</li>
+              <li><strong>Compliance Verification:</strong> Flags calls utilizing immutable constant strings alongside distinct parameter tuples as compliant prepared statements.</li>
+            </ol>
+          </section>
+
+          <section class="paper-section">
+            <h2>5. Mitigation Evaluation & Experimental Results</h2>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Test Case</th>
+                  <th>Input Payload / Pattern</th>
+                  <th>Vulnerable Mode Behavior</th>
+                  <th>Mitigated Mode Behavior</th>
+                  <th>Mitigation Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Authentication Bypass</td>
+                  <td><code>admin' --</code></td>
+                  <td>Password predicate truncated; unauthorized login granted.</td>
+                  <td>Literal parameter comparison; login safely rejected.</td>
+                  <td><span class="badge badge-success">NEUTRALIZED</span></td>
+                </tr>
+                <tr>
+                  <td>Tautology Injection</td>
+                  <td><code>' OR '1'='1' --</code></td>
+                  <td>Entire database records returned; logic bypassed.</td>
+                  <td>Query seeks literal username matching string; 0 records.</td>
+                  <td><span class="badge badge-success">NEUTRALIZED</span></td>
+                </tr>
+                <tr>
+                  <td>Numeric SQLi</td>
+                  <td><code>1 OR 1=1</code></td>
+                  <td>WHERE clause evaluates to True; all users exposed.</td>
+                  <td>Type validation rejects non-integer input with 400 Bad Request.</td>
+                  <td><span class="badge badge-success">NEUTRALIZED</span></td>
+                </tr>
+                <tr>
+                  <td>UNION-based Extraction</td>
+                  <td><code>x' UNION SELECT ... --</code></td>
+                  <td>Private user credentials leaked via product search view.</td>
+                  <td>Input treated strictly as search substring; zero leaks.</td>
+                  <td><span class="badge badge-success">NEUTRALIZED</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="paper-section">
+            <h2>6. Conclusion</h2>
+            <p>
+              SQL Injection remains a critical security risk because developers mistakenly treat query formation as text formatting rather than program compilation. 
+              The findings of this project demonstrate that blacklist filtering and regex sanitization are inherently fragile and bypassable. 
+              The only mathematically complete defense against SQL injection is the strict separation of code from data achieved via <strong>Parameterized Queries (Prepared Statements)</strong>, augmented by strong typing, ORM abstractions, and the Principle of Least Privilege.
+            </p>
+          </section>
+
+          <section class="paper-section">
+            <h2>7. References & Academic Citations</h2>
+            <ul>
+              <li>OWASP Foundation, <em>OWASP Top 10: 2021 - A03:2021 Injection</em>, 2021.</li>
+              <li>MITRE Corporation, <em>CWE-89: Improper Neutralization of Special Elements used in an SQL Command</em>, Common Weakness Enumeration, 2024.</li>
+              <li>NIST, <em>Security and Privacy Controls for Information Systems and Organizations</em>, NIST Special Publication 800-53 (Rev. 5), Control SI-10.</li>
+              <li>Chomsky, N., <em>Three models for the description of language</em>, IRE Transactions on Information Theory, 1956.</li>
+              <li>SEI CERT, <em>IDS00-J: Prevent SQL Injection</em>, Carnegie Mellon Software Engineering Institute, 2022.</li>
+            </ul>
+          </section>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>Academic Minor Project // Detection, Exploitation, and Mitigation of SQL Injection Vulnerabilities // Built for Educational Research</p>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
